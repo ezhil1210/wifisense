@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFiSense | AI Wi-Fi Diagnostics & Root Cause Engine</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Fix Assistant Slide-over Modal -->
+    <div id="fix-modal" class="modal-overlay hidden" onclick="closeFixModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <span class="badge" id="modal-severity-badge">Warning</span>
+                    <h2 class="text-xl" id="modal-title" style="margin-top: 6px;">AI Diagnostic Result</h2>
+                </div>
+                <button class="modal-close-btn" onclick="closeFixModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="diagnostic-banner" id="modal-cause-banner">
+                    <div class="text-sm text-secondary">Identified Root Cause</div>
+                    <div class="text-lg mono fw-bold" id="modal-root-cause">--</div>
+                </div>
+
+                <div class="modal-section">
+                    <h4 class="text-sm text-secondary uppercase tracking">Subscriber Summary</h4>
+                    <p class="text-base" id="modal-explanation" style="margin-top: 6px;">--</p>
+                </div>
+
+                <div class="modal-section">
+                    <h4 class="text-sm text-secondary uppercase tracking">Measured Telemetry Evidence</h4>
+                    <ul class="evidence-list" id="modal-evidence-list"></ul>
+                </div>
+
+                <div class="modal-section">
+                    <h4 class="text-sm text-secondary uppercase tracking">Actionable Remediation Steps</h4>
+                    <div class="remediation-steps-list" id="modal-remediation-steps"></div>
+                </div>
+            </div>
+            <div class="modal-footer flex-between">
+                <button class="btn btn-primary" id="btn-modal-push-isp" onclick="pushCurrentTicketToISP()">🚀 Push Ticket to ISP Portal</button>
+                <button class="btn btn-secondary" onclick="closeFixModal()">Close Assistant</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enlarged Graph View Modal -->
+    <div id="chart-modal" class="modal-overlay hidden" onclick="closeChartModal(event)">
+        <div class="modal-card chart-modal-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <span class="badge badge-accent" id="chart-modal-badge">Live Analytics</span>
+                    <h2 class="text-xl" id="chart-modal-title" style="margin-top: 6px;">Enlarged Metric View</h2>
+                </div>
+                <button class="modal-close-btn" onclick="closeChartModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Large Chart Canvas Container -->
+                <div class="large-chart-wrapper">
+                    <canvas id="large-chart-canvas"></canvas>
+                </div>
+                
+                <!-- Historical Stats Grid -->
+                <div class="chart-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px;">
+                    <div class="stat-box">
+                        <div class="text-xs text-muted">Current</div>
+                        <div class="stat-val mono text-lg fw-bold" id="chart-stat-current">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="text-xs text-muted">Average</div>
+                        <div class="stat-val mono text-lg fw-bold" id="chart-stat-avg">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="text-xs text-muted">Peak / Max</div>
+                        <div class="stat-val mono text-lg fw-bold" id="chart-stat-max">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="text-xs text-muted">Lowest / Min</div>
+                        <div class="stat-val mono text-lg fw-bold" id="chart-stat-min">--</div>
+                    </div>
+                </div>
+
+                <div class="modal-section" style="margin-top: 16px;">
+                    <h4 class="text-sm text-secondary uppercase tracking">Metric Diagnostic Thresholds</h4>
+                    <div class="text-xs text-muted" id="chart-modal-threshold-info" style="margin-top: 6px; line-height: 1.6;">--</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeChartModal()">Close Graph View</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <!-- Navigation Header -->
+        <nav class="navbar">
+            <div class="brand">
+                <div class="status-beacon" id="global-status-beacon"></div>
+                WiFiSense <span class="badge badge-accent">AI 2.0</span>
+            </div>
+            <div class="nav-links">
+                <a href="/static/support.html" class="nav-btn">Support Console &rarr;</a>
+            </div>
+        </nav>
+
+        <!-- Top Hero Grid: Health Score + Connection Quick View -->
+        <div class="hero-grid">
+            <!-- Wi-Fi Health Score Radial Card -->
+            <div class="card clickable-card health-card stagger-1" onclick="openChartModal('health')">
+                <div class="card-header flex-between" style="width: 100%;">
+                    <span class="text-sm font-semibold text-secondary">Wi-Fi Link Health Score <span class="text-xs text-muted">🔍</span></span>
+                    <span class="badge badge-outline" id="health-score-status">Calculating</span>
+                </div>
+
+                <div class="health-radial-wrapper">
+                    <svg class="health-ring-svg" viewBox="0 0 120 120">
+                        <circle class="ring-bg" cx="60" cy="60" r="50"></circle>
+                        <circle class="ring-progress" id="health-ring-bar" cx="60" cy="60" r="50" stroke-dasharray="314.15" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <div class="health-score-text">
+                        <span class="score-number mono" id="val-health-score">--</span>
+                        <span class="score-label text-xs">/ 100</span>
+                    </div>
+                </div>
+                <div class="health-footer-info">
+                    <span class="text-xs text-muted">Rolling Statistical Baseline Z-Score Active</span>
+                </div>
+            </div>
+
+            <!-- Network Topology Map Card -->
+            <div class="card topology-card stagger-2">
+                <div class="card-header flex-between">
+                    <span class="text-sm font-semibold text-secondary">Live Network Topology & Gateway Path</span>
+                    <span class="badge badge-neutral" id="topo-ssid-badge">SSID: Connecting</span>
+                </div>
+                <div class="topology-nodes-container">
+                    <div class="topo-node active" id="node-device">
+                        <div class="topo-icon">💻</div>
+                        <div class="topo-label">Your Device</div>
+                        <div class="topo-sub text-xs mono" id="topo-sub-device">Connected</div>
+                    </div>
+                    <div class="topo-link" id="link-wifi"></div>
+                    <div class="topo-node active" id="node-router">
+                        <div class="topo-icon">📡</div>
+                        <div class="topo-label">Wi-Fi AP</div>
+                        <div class="topo-sub text-xs mono" id="topo-sub-router">Ch 36 (5 GHz)</div>
+                    </div>
+                    <div class="topo-link" id="link-gateway"></div>
+                    <div class="topo-node active" id="node-isp">
+                        <div class="topo-icon">🌐</div>
+                        <div class="topo-label">ISP Gateway</div>
+                        <div class="topo-sub text-xs mono" id="topo-sub-isp">Ping 15ms</div>
+                    </div>
+                    <div class="topo-link" id="link-internet"></div>
+                    <div class="topo-node active" id="node-cloud">
+                        <div class="topo-icon">☁️</div>
+                        <div class="topo-label">Internet</div>
+                        <div class="topo-sub text-xs mono" id="topo-sub-cloud">DNS OK</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric KPI Cards Grid -->
+        <div class="grid-metrics">
+            <!-- Signal Card -->
+            <div class="card clickable-card stagger-1" onclick="openChartModal('rssi')">
+                <div class="metric-header">
+                    <span class="text-sm font-medium">Signal Strength (RSSI) <span class="text-xs text-muted">🔍</span></span>
+                    <div class="signal-bars" id="signal-bars">
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                        <div class="bar"></div>
+                    </div>
+                </div>
+                <div class="metric-value-container">
+                    <span class="metric-value mono" id="val-rssi">--</span>
+                    <span class="metric-unit text-sm">dBm</span>
+                </div>
+                <div class="sparkline-container" id="spark-rssi"></div>
+            </div>
+
+            <!-- Latency Card -->
+            <div class="card clickable-card stagger-2" onclick="openChartModal('latency')">
+                <div class="metric-header">
+                    <span class="text-sm font-medium">Ping Latency & Jitter <span class="text-xs text-muted">🔍</span></span>
+                    <span class="badge badge-outline" id="badge-latency" style="color: var(--status-neutral)">...</span>
+                </div>
+                <div class="metric-value-container">
+                    <span class="metric-value mono" id="val-latency">--</span>
+                    <span class="metric-unit text-sm">ms</span>
+                    <span class="text-xs text-muted mono" style="margin-left: auto;" id="val-jitter">±0.0 ms</span>
+                </div>
+                <div class="sparkline-container" id="spark-latency"></div>
+            </div>
+
+            <!-- Packet Loss Card -->
+            <div class="card clickable-card stagger-3" onclick="openChartModal('loss')">
+                <div class="metric-header">
+                    <span class="text-sm font-medium">Packet Loss <span class="text-xs text-muted">🔍</span></span>
+                    <span class="badge badge-outline" id="badge-loss">0.0%</span>
+                </div>
+                <div class="metric-value-container">
+                    <span class="metric-value mono" id="val-loss">--</span>
+                    <span class="metric-unit text-sm">%</span>
+                </div>
+                <div class="sparkline-container" id="spark-loss"></div>
+            </div>
+
+            <!-- DNS Time Card -->
+            <div class="card clickable-card stagger-4" onclick="openChartModal('dns')">
+                <div class="metric-header">
+                    <span class="text-sm font-medium">DNS Lookup Speed <span class="text-xs text-muted">🔍</span></span>
+                </div>
+                <div class="metric-value-container">
+                    <span class="metric-value mono" id="val-dns">--</span>
+                    <span class="metric-unit text-sm">ms</span>
+                </div>
+                <div class="sparkline-container" id="spark-dns"></div>
+            </div>
+
+        </div>
+
+        <!-- Connection Details & AI Timeline Grid -->
+        <div class="grid-2">
+            <!-- Connection & Channel Details -->
+            <div class="card">
+                <h3 class="text-lg font-semibold" style="margin-bottom: 16px;">Wi-Fi Spectrum & Connection Details</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Network SSID</span>
+                    <span class="detail-value mono fw-bold" id="det-ssid">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Frequency Band</span>
+                    <span class="detail-value fw-bold" id="det-band">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Wi-Fi Channel</span>
+                    <span class="detail-value mono" id="det-channel">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">PHY Radio Standard</span>
+                    <span class="detail-value mono" id="det-radio">--</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Negotiated Rates (Rx / Tx)</span>
+                    <span class="detail-value mono" id="det-rates">-- / -- Mbps</span>
+                </div>
+                
+                <!-- Channel Spectrum Bar -->
+                <div class="spectrum-box" style="margin-top: 18px;">
+                    <div class="text-xs text-muted flex-between" style="margin-bottom: 6px;">
+                        <span>Wi-Fi Spectrum Congestion Bar</span>
+                        <span id="spectrum-channel-text" class="mono text-xs">Channel --</span>
+                    </div>
+                    <div class="spectrum-bar-track">
+                        <div class="spectrum-bar-fill" id="spectrum-fill" style="width: 25%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Diagnostic Timeline -->
+            <div class="card">
+                <div class="flex-between" style="margin-bottom: 16px;">
+                    <h3 class="text-lg font-semibold">AI Diagnostics & Event Timeline</h3>
+                    <button class="btn btn-sm" onclick="clearTimeline()">Clear History</button>
+                </div>
+                <div class="timeline" id="timeline">
+                    <div class="text-muted text-sm">Waiting for telemetry and diagnostic events...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Scenario & Force Diagnose Action Bar -->
+    <div class="demo-controls">
+        <span class="controls-label text-xs text-muted">Simulate Scenario:</span>
+        <button class="btn" onclick="triggerScenario('healthy')">Healthy</button>
+        <button class="btn" onclick="triggerScenario('weak_signal')">Weak Signal</button>
+        <button class="btn" onclick="triggerScenario('high_latency')">High Latency</button>
+        <button class="btn" onclick="triggerScenario('packet_loss')">Packet Loss</button>
+        <button class="btn" onclick="triggerScenario('dns_failure')">DNS Failure</button>
+        <button class="btn" onclick="triggerScenario('channel_congestion')">Channel Congestion</button>
+        <button class="btn" style="border-color: var(--status-critical); color: var(--status-critical);" onclick="triggerScenario('no_wifi')">🚫 No Wi-Fi / Offline</button>
+        <button class="btn" style="border-color: var(--status-excellent); color: var(--status-excellent);" onclick="resetToRealTime()">🔄 Return to Real-Time</button>
+        <button class="btn btn-primary" onclick="triggerDiagnosis()">⚡ Force AI Diagnosis</button>
+    </div>
+
+
+
+
+
+
+
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

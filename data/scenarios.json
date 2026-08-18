@@ -1,0 +1,95 @@
+{
+  "healthy": {
+    "signal_percent": 95,
+    "rssi": -52,
+    "bssid": "aa:bb:cc:dd:ee:ff",
+    "ssid": "HomeNetwork",
+    "channel": 36,
+    "rx_rate": 866,
+    "tx_rate": 866,
+    "latency_ms": 15.0,
+    "packet_loss_percent": 0.0,
+    "dns_resolution_ms": 20.0,
+    "http_probe_success": true
+  },
+  "weak_signal": {
+    "signal_percent": 25,
+    "rssi": -87,
+    "bssid": "aa:bb:cc:dd:ee:ff",
+    "ssid": "HomeNetwork",
+    "channel": 36,
+    "rx_rate": 24,
+    "tx_rate": 18,
+    "latency_ms": 65.0,
+    "packet_loss_percent": 1.5,
+    "dns_resolution_ms": 120.0,
+    "http_probe_success": true
+  },
+  "high_latency": {
+    "signal_percent": 88,
+    "rssi": -56,
+    "bssid": "aa:bb:cc:dd:ee:ff",
+    "ssid": "HomeNetwork",
+    "channel": 36,
+    "rx_rate": 866,
+    "tx_rate": 866,
+    "latency_ms": 250.0,
+    "packet_loss_percent": 0.0,
+    "dns_resolution_ms": 30.0,
+    "http_probe_success": true
+  },
+  "packet_loss": {
+    "signal_percent": 85,
+    "rssi": -57,
+    "bssid": "aa:bb:cc:dd:ee:ff",
+    "ssid": "HomeNetwork",
+    "channel": 6,
+    "rx_rate": 144,
+    "tx_rate": 72,
+    "latency_ms": 45.0,
+    "packet_loss_percent": 8.0,
+    "dns_resolution_ms": 150.0,
+    "http_probe_success": true
+  },
+  "dns_failure": {
+    "signal_percent": 90,
+    "rssi": -55,
+    "bssid": "aa:bb:cc:dd:ee:ff",
+    "ssid": "HomeNetwork",
+    "channel": 36,
+    "rx_rate": 866,
+    "tx_rate": 866,
+    "latency_ms": 12.0,
+    "packet_loss_percent": 0.0,
+    "dns_resolution_ms": 2000.0,
+    "http_probe_success": false
+  },
+  "channel_congestion": {
+    "signal_percent": 82,
+    "rssi": -60,
+    "bssid": "aa:bb:cc:dd:ee:ff",
+    "ssid": "HomeNetwork_2.4G",
+    "channel": 6,
+    "rx_rate": 72,
+    "tx_rate": 54,
+    "latency_ms": 78.0,
+    "packet_loss_percent": 5.5,
+    "dns_resolution_ms": 180.0,
+    "http_probe_success": true
+  },
+  "no_wifi": {
+    "signal_percent": 0,
+    "rssi": -100,
+    "bssid": "",
+    "ssid": "Disconnected",
+    "channel": 0,
+    "rx_rate": 0,
+    "tx_rate": 0,
+    "latency_ms": 0.0,
+    "packet_loss_percent": 100.0,
+    "dns_resolution_ms": 3000.0,
+    "http_probe_success": false
+  }
+}
+
+

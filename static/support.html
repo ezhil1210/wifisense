@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Console | WiFiSense</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .ticket-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .ticket-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ticket-card:hover {
+            border-color: var(--text-secondary);
+        }
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .ticket-details {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border);
+        }
+        .ticket-details.expanded {
+            display: block;
+        }
+        .raw-json {
+            background: rgba(0,0,0,0.5);
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            color: var(--status-good);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="brand">WiFiSense Support Console</div>
+            <div class="nav-links">
+                <a href="/">&larr; Back to Dashboard</a>
+            </div>
+        </nav>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 class="text-xl">Active Tickets</h2>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn" onclick="fetchTickets()">Refresh</button>
+                <button class="btn" style="border-color: var(--status-critical); color: var(--status-critical);" onclick="clearAllTickets()">Clear All Tickets</button>
+            </div>
+        </div>
+
+        <div class="ticket-list" id="ticket-list">
+            <div class="text-muted">Loading tickets...</div>
+        </div>
+    </div>
+
+    <script src="/static/js/support.js"></script>
+</body>
+</html>
